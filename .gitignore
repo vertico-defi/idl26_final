@@ -1,1 +1,5 @@
 data/
+view_pt_samples.py
+viewData/
+__pycache__/
+code/__pycache__/
