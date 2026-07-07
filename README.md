@@ -2,7 +2,7 @@
 
 Author: Richard Van Winkle, Matrikelnummer: 3214183
 
-# Environment Setup
+## Environment Setup
 
 Create a conda environment with the following linux command
 
@@ -16,7 +16,7 @@ Use wheel download of pytorch with cuda that is compatible with a nvidia GTX 970
 `python -m pip install torch==2.3.1 --index-url https://download.pytorch.org/whl/cu118`
 
 
-# Directory Setup
+## Directory Setup
 
 Before running the code, add the audit file, so that we can collect the initial errors. In the root directory run the following command:
 
