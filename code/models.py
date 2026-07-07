@@ -168,7 +168,8 @@ class ResNet18(nn.Module):
         
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.classifier = nn.Linear(512, num_classes)
-
+    # (fix2) the images go to here from the model call in the fit.py. The classifier output
+    # (fix2) is computed but not getting returned
     def forward(self, x):
         out = self.activation(self.bn1(self.conv1(x)))
         out = self.stage1(out)
@@ -177,4 +178,6 @@ class ResNet18(nn.Module):
         out = self.stage4(out)
         out = self.avgpool(out)
         out = torch.flatten(out, 1)
-        self.classifier(out)
+        # (fix2) we need to return self.classifier out
+        out = self.classifier(out)
+        return out
