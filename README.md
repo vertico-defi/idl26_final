@@ -6,16 +6,14 @@ Author: Richard Van Winkle, Matrikelnummer: 3214183
 
 Create a conda environment with the following linux command
 
-`conda create -n deepLearning python=3.10`
+`conda create -n dlFinal_gpu python=3.10 -y`
+`conda activate dlFinal_gpu`
 
-press y to finish the install. Activate the environment with the following command:
+`python -m pip install --upgrade pip`
+`python -m pip install numpy`
 
-`conda activate deepLearning`
-
-Make sure to see `(deepLearning)` on the left side of your command line. Then install the NumPy and PyTorch packages with the following commands:
-
-`pip install numpy`
-`pip install torch`
+Use wheel download of pytorch with cuda that is compatible with a nvidia GTX 970 graphics card.
+`python -m pip install torch==2.3.1 --index-url https://download.pytorch.org/whl/cu118`
 
 
 # Directory Setup
@@ -28,6 +26,3 @@ Looking at the `train.py` file, it will try to read from a config.json file, add
 
 `touch config.json`
 
-Before doing any major work on this dataset, we will have to find out how many channels the images have for future processing. Use this oppurtunity to also sample/view some of the images, and eventually to perform a sanity check on how the models are working. So create a python file to help you view the images and print some data on them. This file is neccessary but not part of the graded work, we'll have chatGPT mock something up for us, the command to create the file is:
-
-`touch view_pt_samples.py`
