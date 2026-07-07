@@ -5,6 +5,7 @@ MG 6/6/2026
 """
 import torch
 
+# (fix2) Here we see the criterion as an input to trainer
 class Trainer:
     def __init__(self, model, criterion, optimizer, device):
         self.model = model
@@ -19,8 +20,16 @@ class Trainer:
         
         for images, labels in dataloader:
             images, labels = images.to(self.device), labels.to(self.device)
-            
+            # (fix2) outputs is assigned from the self.model(images) call. The model is pulled from 
+            # (fix2) resnet18 class as setup in the config.json file. So the next line is calling
+            # (fix2) the REsNEt18 object with images as the argument. Self.model(images) makes the model
+            # (fix2) object callable. PyTorch internally routes that call to ResNet18.forward(self. images)
             outputs = self.model(images)
+            # (fix2) SANITY CHECK: This self.criterion is nn.CrossEntropyLoss() fromt train.py
+            # (fix2) so these inputs can be viewed as inputs into the nn.CrossEntropyLoss() object
+            # (fix2) and compares the predicted outputs to the labels. Check the outputs size here
+            print("outputs type:", type(outputs))
+            print("outputs calue:", outputs)
             loss = self.criterion(outputs, labels)
             
             loss.backward()

@@ -22,6 +22,10 @@ Before running the code, add the audit file, so that we can collect the initial 
 
 `touch AUDIT_LOG.md`
 
+Also, for the oral defense, let's take some notes and record the outputs of debugging and auditing using an debug_notes.md file type the following command in the termial:
+
+`touch debug_notes.md`
+
 Looking at the `train.py` file, it will try to read from a config.json file, add that to the directory with the following command:
 
 `touch config.json`

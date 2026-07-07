@@ -23,9 +23,11 @@ def main():
 
     model_class = getattr(models, config["MODEL"])
     model = model_class(in_channels=config["CHANNELS"], num_classes=config["NUM_CLASSES"], drop_rate=0.99, activation_str=None).to(device)
+    # (fix2) for the following crossEntropyLoss function there is an error saying the input needs to be a tensor. There are no inputs here, let's
+    # (fix2) trace criterion. 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=config["LEARNING_RATE"])
-
+    # (fix2) criterion gets passed in here, the second argument to Trainer which comes from the fit.py file
     trainer = Trainer(model, criterion, optimizer, device)
     trainer.fit(train_loader, val_loader, epochs=config["EPOCHS"])
 
