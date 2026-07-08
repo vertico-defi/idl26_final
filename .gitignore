@@ -3,3 +3,8 @@ view_pt_samples.py
 viewData/
 __pycache__/
 code/__pycache__/
+assignment_final.pdf
+checkpoints/
+results/*.txt
+results/*.log
+!results/.gitkeep
