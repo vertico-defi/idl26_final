@@ -256,3 +256,78 @@ Training Complete!
 (dlFinal_gpu) ┌──(vertico㉿vertico)-[~/thws/semester3/dlFinal]
 └─$ 
 ```
+
+## fix 5
+
+```bash
+(dlFinal_gpu) ┌──(vertico㉿vertico)-[~/thws/semester3/dlFinal]
+└─$ python3 code/train.py
+Training executing on device: cuda
+Using activation function: ReLU(inplace=True)
+
+ Starting Training Routine...
+--------------------------------------------------
+Epoch [01/20] | Train Loss: 0.9967 - Train Acc: 66.31% | Val Loss: 0.9956 - Val Acc: 67.04%
+Epoch [02/20] | Train Loss: 0.9184 - Train Acc: 67.90% | Val Loss: 0.9153 - Val Acc: 65.92%
+Epoch [03/20] | Train Loss: 0.8747 - Train Acc: 68.93% | Val Loss: 0.8375 - Val Acc: 69.29%
+Epoch [04/20] | Train Loss: 0.8604 - Train Acc: 68.84% | Val Loss: 0.9310 - Val Acc: 62.42%
+Epoch [05/20] | Train Loss: 0.8121 - Train Acc: 70.81% | Val Loss: 1.1694 - Val Acc: 58.18%
+Epoch [06/20] | Train Loss: 0.7816 - Train Acc: 71.73% | Val Loss: 0.8068 - Val Acc: 69.54%
+Epoch [07/20] | Train Loss: 0.7632 - Train Acc: 72.15% | Val Loss: 0.9137 - Val Acc: 63.05%
+Epoch [08/20] | Train Loss: 0.7395 - Train Acc: 72.62% | Val Loss: 0.7492 - Val Acc: 72.91%
+Epoch [09/20] | Train Loss: 0.7220 - Train Acc: 73.10% | Val Loss: 0.7444 - Val Acc: 71.66%
+Epoch [10/20] | Train Loss: 0.7129 - Train Acc: 73.98% | Val Loss: 0.8012 - Val Acc: 69.79%
+Epoch [11/20] | Train Loss: 0.6871 - Train Acc: 74.50% | Val Loss: 0.7701 - Val Acc: 72.91%
+Epoch [12/20] | Train Loss: 0.6759 - Train Acc: 74.32% | Val Loss: 0.7078 - Val Acc: 75.03%
+Epoch [13/20] | Train Loss: 0.6477 - Train Acc: 76.14% | Val Loss: 0.7087 - Val Acc: 75.28%
+Epoch [14/20] | Train Loss: 0.6362 - Train Acc: 76.61% | Val Loss: 0.7281 - Val Acc: 73.78%
+Epoch [15/20] | Train Loss: 0.6079 - Train Acc: 77.58% | Val Loss: 0.8034 - Val Acc: 68.54%
+Epoch [16/20] | Train Loss: 0.5704 - Train Acc: 79.11% | Val Loss: 0.7630 - Val Acc: 73.53%
+Epoch [17/20] | Train Loss: 0.5299 - Train Acc: 80.59% | Val Loss: 0.8293 - Val Acc: 70.91%
+Epoch [18/20] | Train Loss: 0.4774 - Train Acc: 82.47% | Val Loss: 0.8262 - Val Acc: 73.41%
+Epoch [19/20] | Train Loss: 0.4256 - Train Acc: 84.39% | Val Loss: 0.9216 - Val Acc: 65.79%
+Epoch [20/20] | Train Loss: 0.3573 - Train Acc: 86.99% | Val Loss: 0.9312 - Val Acc: 72.16%
+--------------------------------------------------
+Training Complete!
+
+```
+
+## error notes
+
+After fixing `optimizer.zero_grad()`, the training was stable, but the accuracy still stayed mostly around 66-68% when the activation function was `Identity()`. I noticed that this looked suspicious because the ResNet18 model was printing:
+
+```bash
+Using activation function: Identity()
+```
+
+This means the activation function was not really doing anything. In the ResNet paper by He et al., the identity mapping refers to the shortcut connection, not to the main activation function inside the residual block. The residual block still uses a non-linear activation, normally ReLU. So I changed the activation string in `models.py` from:
+
+```python
+activation_str = "Identity"
+```
+
+to:
+
+```python
+activation_str = "ReLU"
+```
+
+This improved the training results. With `Identity()`, the best validation accuracy I got was about 68.54%. After changing to `ReLU`, the best validation accuracy reached 75.28% at epoch 13. The final training accuracy also increased to 86.99%, which shows that the model is now learning the training set much more strongly.
+
+One thing to notice is that after about epoch 13, the training accuracy keeps increasing but the validation accuracy does not keep improving in the same way. This could be a sign of overfitting, because the model is fitting the training data better but not generalizing better to the validation data. For now, this is still an improvement because the best validation accuracy is higher than before.
+
+### source on ResNet18 / ReLU
+
+He et al. (2016), "Deep Residual Learning for Image Recognition"
+
+### Magda questions
+
+Why is `Identity()` not a good activation function here?
+
+What is the difference between the identity shortcut in ResNet and the activation function?
+
+Why does a neural network need non-linear activation functions?
+
+Why did the validation accuracy improve with ReLU?
+
+Why might the training accuracy keep increasing while validation accuracy stops improving?
