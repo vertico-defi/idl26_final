@@ -21,6 +21,8 @@ class Trainer:
         # (fix3) dataloaders is coming in as a parameter to train one epoch.
         for images, labels in dataloader:
             images, labels = images.to(self.device), labels.to(self.device)
+            # (fix4) Add the zero grad function to zero the gradients after each pass
+            self.optimizer.zero_grad()
             # (fix2) outputs is assigned from the self.model(images) call. The model is pulled from 
             # (fix2) resnet18 class as setup in the config.json file. So the next line is calling
             # (fix2) the REsNEt18 object with images as the argument. Self.model(images) makes the model
