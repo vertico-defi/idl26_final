@@ -12,12 +12,13 @@ class Trainer:
         self.criterion = criterion
         self.optimizer = optimizer
         self.device = device
-
+    # the train_one_epoch method is called in the fit method
     def train_one_epoch(self, dataloader):
         self.model.train()
         running_loss = 0.0
         correct, sum = 0, 0
         
+        # (fix3) dataloaders is coming in as a parameter to train one epoch.
         for images, labels in dataloader:
             images, labels = images.to(self.device), labels.to(self.device)
             # (fix2) outputs is assigned from the self.model(images) call. The model is pulled from 
@@ -28,8 +29,15 @@ class Trainer:
             # (fix2) SANITY CHECK: This self.criterion is nn.CrossEntropyLoss() fromt train.py
             # (fix2) so these inputs can be viewed as inputs into the nn.CrossEntropyLoss() object
             # (fix2) and compares the predicted outputs to the labels. Check the outputs size here
-            print("outputs type:", type(outputs))
-            print("outputs calue:", outputs)
+            # print("outputs type:", type(outputs))
+            # print("outputs calue:", outputs)
+            # (fix3) The error here is now the second parameter for the cross entropy loss object
+            # (fix3) so here we'll just print the info on labels and see what is going on
+            # print("labels type:", type(labels))
+            # print("labels shape:", labels.shape)
+            # print("labels dtype:", labels.dtype)
+            # print("labels value:", labels)
+            # (fix3) the hape of the labels is wrong, we'll need to trace it back, it is coming from dataloaders.
             loss = self.criterion(outputs, labels)
             
             loss.backward()
@@ -66,6 +74,9 @@ class Trainer:
         print("-" * 50)
         
         for epoch in range(epochs):
+            # (fix3) we can see here that the labels will come from train_loader.
+            # (fix3) that is a parameter for the fit method. Thge fit method is called
+            # (fix3) under the Trainer class in train.py
             train_loss, train_acc = self.train_one_epoch(train_loader)
             val_loss, val_acc = self.evaluate(val_loader)
             
