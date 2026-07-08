@@ -11,6 +11,7 @@ import torch.optim as optim
 from data import get_loaders
 import models
 from fit import Trainer
+from pathlib import Path
 
 def main():   
     with open("config.json", "r") as f:
@@ -33,7 +34,16 @@ def main():
     trainer = Trainer(model, criterion, optimizer, device)
     # (fix3) here is the train_loader in the method from fit.py, we see that it is an output from
     # (fix3) get_loaders which is the main class in data.py, so go there.
-    trainer.fit(train_loader, val_loader, epochs=config["EPOCHS"])
+    checkpoint_path = f"checkpoints/{config['DATA']}_{config['MODEL']}.pt"
+
+    best_metrics = trainer.fit(
+        train_loader,
+        val_loader,
+        epochs=config["EPOCHS"],
+        checkpoint_path=checkpoint_path
+    )
+
+    print(f"Saved best model to: {checkpoint_path}")
 
 if __name__ == "__main__":
     main()

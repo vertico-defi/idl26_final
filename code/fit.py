@@ -4,6 +4,7 @@ MAI/IDL SS26 - Final assignment.
 MG 6/6/2026
 """
 import torch
+from pathlib import Path
 
 # (fix2) Here we see the criterion as an input to trainer
 class Trainer:
@@ -71,9 +72,12 @@ class Trainer:
                 
         return running_loss / total, (correct / total) * 100
 
-    def fit(self, train_loader, val_loader, epochs):
+    def fit(self, train_loader, val_loader, epochs, checkpoint_path=None):
         print("\n Starting Training Routine...")
         print("-" * 50)
+
+        best_val_acc = 0.0
+        best_metrics = None
         
         for epoch in range(epochs):
             # (fix3) we can see here that the labels will come from train_loader.
@@ -81,10 +85,39 @@ class Trainer:
             # (fix3) under the Trainer class in train.py
             train_loss, train_acc = self.train_one_epoch(train_loader)
             val_loss, val_acc = self.evaluate(val_loader)
-            
+                
+            if val_acc > best_val_acc:
+                best_val_acc = val_acc
+                best_metrics = {
+                    "best_epoch": epoch + 1,
+                    "train_loss": train_loss,
+                    "train_acc": train_acc,
+                    "val_loss": val_loss,
+                    "val_acc": val_acc
+                }
+
+                if checkpoint_path is not None:
+                    Path(checkpoint_path).parent.mkdir(parents=True, exist_ok=True)
+                    torch.save(
+                        {
+                            "model_state_dict": self.model.state_dict(),
+                            "best_epoch": epoch + 1,
+                            "train_loss": train_loss,
+                            "train_acc": train_acc,
+                            "val_loss": val_loss,
+                            "val_acc": val_acc
+                        },
+                        checkpoint_path
+                    )
+
             print(f"Epoch [{epoch+1:02d}/{epochs:02d}] | "
                   f"Train Loss: {train_loss:.4f} - Train Acc: {train_acc:.2f}% | "
                   f"Val Loss: {val_loss:.4f} - Val Acc: {val_acc:.2f}%")
         
         print("-" * 50)
         print("Training Complete!")
+
+        if best_metrics is not None:
+            print(f"Best Val Acc: {best_metrics['val_acc']:.2f}% at epoch {best_metrics['best_epoch']}")
+
+        return best_metrics
