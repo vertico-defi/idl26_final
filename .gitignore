@@ -1,10 +1,42 @@
+# Dataset files
 data/
+
+# Local dataset inspection outputs
 view_pt_samples.py
 viewData/
+
+# Python cache files
 __pycache__/
 code/__pycache__/
+*.pyc
+
+# Course-provided assignment file
 assignment_final.pdf
+
+# Model checkpoints / trained weights
 checkpoints/
-results/*.txt
+
+# Generated benchmark logs
+results/full_benchmarks/
+results/smoke_tests/
 results/*.log
+results/*_train.txt
+results/*_test.txt
+
+# Keep final consolidated benchmark table
+!results/benchmark_results.txt
 !results/.gitkeep
+
+# Temporary config backup from benchmark scripts
+config.backup.json
+
+# Personal defense/debug notes
+debug_notes.md
+
+# Local report drafts / Codex findings, unless you decide to submit them
+reports/
+results/benchmark_results_old*.txt
+
+# Local benchmark automation scripts
+run_all_benchmarks.sh
+smoke_test_models.sh
