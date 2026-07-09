@@ -40,3 +40,7 @@ results/benchmark_results_old*.txt
 # Local benchmark automation scripts
 run_all_benchmarks.sh
 smoke_test_models.sh
+
+# Local AlexNet refactor benchmark logs/script
+results/alexnet_refactor/
+run_alexnet_refactor_benchmarks.sh
