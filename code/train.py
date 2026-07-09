@@ -24,11 +24,21 @@ def main():
     model_class = getattr(models, config["MODEL"])
     model = model_class(in_channels=config["CHANNELS"], num_classes=config["NUM_CLASSES"], activation_str=None).to(device)
 
+    transfer_from = config.get("TRANSFER_FROM")
+    if transfer_from:
+        transfer_checkpoint_path = f"checkpoints/{transfer_from}_{config['MODEL']}.pt"
+        transfer_checkpoint = torch.load(transfer_checkpoint_path, map_location=device)
+        model.load_state_dict(transfer_checkpoint["model_state_dict"])
+        print(f"Loaded transfer weights from: {transfer_checkpoint_path}")
+
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=config["LEARNING_RATE"])
 
     trainer = Trainer(model, criterion, optimizer, device)
     checkpoint_path = f"checkpoints/{config['DATA']}_{config['MODEL']}.pt"
+
+    if transfer_from:
+        checkpoint_path = f"checkpoints/{config['DATA']}_{config['MODEL']}_transfer_from_{transfer_from}.pt"
 
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats()
@@ -59,6 +69,7 @@ def main():
     checkpoint = torch.load(checkpoint_path, map_location=device)
     checkpoint["training_runtime_seconds"] = training_runtime_seconds
     checkpoint["training_peak_memory_mb"] = training_peak_memory_mb
+    checkpoint["transfer_from"] = transfer_from if transfer_from else "none"
     torch.save(checkpoint, checkpoint_path)
 
 if __name__ == "__main__":

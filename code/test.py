@@ -37,7 +37,11 @@ def main():
         activation_str=None
     ).to(device)
 
+    transfer_from = config.get("TRANSFER_FROM")
     checkpoint_path = Path(f"checkpoints/{config['DATA']}_{config['MODEL']}.pt")
+
+    if transfer_from:
+        checkpoint_path = Path(f"checkpoints/{config['DATA']}_{config['MODEL']}_transfer_from_{transfer_from}.pt")
 
     if not checkpoint_path.exists():
         raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
@@ -87,6 +91,7 @@ def main():
     print(f"Dataset: {config['DATA']}")
     print(f"Model: {config['MODEL']}")
     print(f"Checkpoint: {checkpoint_path}")
+    print(f"Transfer From: {checkpoint.get('transfer_from', 'none')}")
     print(f"Best Epoch: {checkpoint.get('best_epoch', 'unknown')}")
     print(f"Best Train Loss: {checkpoint.get('train_loss', 0):.4f}")
     print(f"Best Train Acc: {checkpoint.get('train_acc', 0):.2f}%")
