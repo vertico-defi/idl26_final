@@ -4,14 +4,13 @@ MAI/IDL SS26 - Final assignment.
 MG 6/6/2026
 """
 import json
-
+import time
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from data import get_loaders
 import models
 from fit import Trainer
-from pathlib import Path
 
 def main():   
     with open("config.json", "r") as f:
@@ -36,6 +35,12 @@ def main():
     # (fix3) get_loaders which is the main class in data.py, so go there.
     checkpoint_path = f"checkpoints/{config['DATA']}_{config['MODEL']}.pt"
 
+    if device.type == "cuda":
+        torch.cuda.reset_peak_memory_stats()
+        torch.cuda.synchronize()
+
+    train_start_time = time.time()
+
     best_metrics = trainer.fit(
         train_loader,
         val_loader,
@@ -43,7 +48,23 @@ def main():
         checkpoint_path=checkpoint_path
     )
 
+    if device.type == "cuda":
+        torch.cuda.synchronize()
+
+    training_runtime_seconds = time.time() - train_start_time
+
+    training_peak_memory_mb = 0.0
+    if device.type == "cuda":
+        training_peak_memory_mb = torch.cuda.max_memory_allocated() / (1024 ** 2)
+
+    print(f"Training Runtime: {training_runtime_seconds:.2f} seconds")
+    print(f"Training Peak Memory: {training_peak_memory_mb:.2f} MB")
     print(f"Saved best model to: {checkpoint_path}")
+
+    checkpoint = torch.load(checkpoint_path, map_location=device)
+    checkpoint["training_runtime_seconds"] = training_runtime_seconds
+    checkpoint["training_peak_memory_mb"] = training_peak_memory_mb
+    torch.save(checkpoint, checkpoint_path)
 
 if __name__ == "__main__":
     main()

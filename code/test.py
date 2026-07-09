@@ -33,7 +33,9 @@ def main():
     model_class = getattr(models, config["MODEL"])
     model = model_class(
         in_channels=config["CHANNELS"],
-        num_classes=config["NUM_CLASSES"]
+        num_classes=config["NUM_CLASSES"],
+        drop_rate=0.99,
+        activation_str=None
     ).to(device)
 
     checkpoint_path = Path(f"checkpoints/{config['DATA']}_{config['MODEL']}.pt")
@@ -45,11 +47,15 @@ def main():
     model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
 
+    training_runtime_seconds = checkpoint.get("training_runtime_seconds", 0.0)
+    training_peak_memory_mb = checkpoint.get("training_peak_memory_mb", 0.0)
+
     all_predictions = []
     all_labels = []
 
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats()
+        torch.cuda.synchronize()
 
     start_time = time.time()
 
@@ -63,6 +69,9 @@ def main():
             all_predictions.extend(predicted.cpu().tolist())
             all_labels.extend(labels.cpu().tolist())
 
+    if device.type == "cuda":
+        torch.cuda.synchronize()
+
     inference_time = time.time() - start_time
     latency_ms_per_sample = (inference_time / len(all_labels)) * 1000
 
@@ -71,9 +80,9 @@ def main():
     recall = recall_score(all_labels, all_predictions, average="macro", zero_division=0) * 100
     macro_f1 = f1_score(all_labels, all_predictions, average="macro", zero_division=0) * 100
 
-    peak_memory_mb = 0.0
+    inference_peak_memory_mb = 0.0
     if device.type == "cuda":
-        peak_memory_mb = torch.cuda.max_memory_allocated() / (1024 ** 2)
+        inference_peak_memory_mb = torch.cuda.max_memory_allocated() / (1024 ** 2)
 
     print("-" * 50)
     print(f"Dataset: {config['DATA']}")
@@ -88,8 +97,10 @@ def main():
     print(f"Macro Precision: {precision:.2f}%")
     print(f"Macro Recall: {recall:.2f}%")
     print(f"Macro F1: {macro_f1:.2f}%")
+    print(f"Training Runtime: {training_runtime_seconds:.2f} seconds")
+    print(f"Training Peak Memory: {training_peak_memory_mb:.2f} MB")
     print(f"Inference Latency: {latency_ms_per_sample:.4f} ms/sample")
-    print(f"Peak Memory: {peak_memory_mb:.2f} MB")
+    print(f"Inference Peak Memory: {inference_peak_memory_mb:.2f} MB")
     print("-" * 50)
 
     results_dir = Path("results")
@@ -102,7 +113,8 @@ def main():
             "DATA\tMODEL\tCHANNELS\tNUM_CLASSES\tLR\tEPOCHS\tBATCH_SIZE\t"
             "BEST_EPOCH\tBEST_TRAIN_LOSS\tBEST_TRAIN_ACC\tBEST_VAL_LOSS\tBEST_VAL_ACC\t"
             "TEST_ACC\tMACRO_PRECISION\tMACRO_RECALL\tMACRO_F1\t"
-            "INFERENCE_MS_PER_SAMPLE\tPEAK_MEMORY_MB\tCHECKPOINT\n"
+            "TRAIN_RUNTIME_SECONDS\tTRAIN_PEAK_MEMORY_MB\t"
+            "INFERENCE_MS_PER_SAMPLE\tINFERENCE_PEAK_MEMORY_MB\tCHECKPOINT\n"
         )
 
     with results_file.open("a") as f:
@@ -123,8 +135,10 @@ def main():
             f"{precision:.2f}\t"
             f"{recall:.2f}\t"
             f"{macro_f1:.2f}\t"
+            f"{training_runtime_seconds:.2f}\t"
+            f"{training_peak_memory_mb:.2f}\t"
             f"{latency_ms_per_sample:.4f}\t"
-            f"{peak_memory_mb:.2f}\t"
+            f"{inference_peak_memory_mb:.2f}\t"
             f"{checkpoint_path}\n"
         )
 
