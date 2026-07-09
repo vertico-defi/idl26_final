@@ -22,17 +22,12 @@ def main():
     train_loader, val_loader, _ = get_loaders(data=config["DATA"], data_path=config["DATA_PATH"], batch_size=config["BATCH_SIZE"])
 
     model_class = getattr(models, config["MODEL"])
-    model = model_class(in_channels=config["CHANNELS"], num_classes=config["NUM_CLASSES"], drop_rate=0.99, activation_str=None).to(device)
-    # (fix2) for the following crossEntropyLoss function there is an error saying the input needs to be a tensor. There are no inputs here, let's
-    # (fix2) trace criterion. 
-    # (fix3) now the second parameter in the cross entropy loss giving us an issue, no need to trace this time
-    # (fix3) go straight to fit.py and see what the dimensions for labels are.
+    model = model_class(in_channels=config["CHANNELS"], num_classes=config["NUM_CLASSES"], activation_str=None).to(device)
+
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=config["LEARNING_RATE"])
-    # (fix2) criterion gets passed in here, the second argument to Trainer which comes from the fit.py file
+
     trainer = Trainer(model, criterion, optimizer, device)
-    # (fix3) here is the train_loader in the method from fit.py, we see that it is an output from
-    # (fix3) get_loaders which is the main class in data.py, so go there.
     checkpoint_path = f"checkpoints/{config['DATA']}_{config['MODEL']}.pt"
 
     if device.type == "cuda":
